@@ -28,9 +28,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	Plane plane = { {0.0f,1.0f,0.0f},1.0f };
-
-	Segment segment{ {0.0f,0.0f,0.0f},{0.0f,1.0f,0.0f} };
+	Segment segment{ { 0.0f, 0.0f, -1.0f }, {1.0f,1.0f,0.0f} };
+	Triangle triangle{};
+	triangle.vertices[0] = { -1.0f, 0.0f, 0.0f };
+	triangle.vertices[1] = { 0.0f, 1.0f, 0.0f };
+	triangle.vertices[2] = { 1.0f, 0.0f, 0.0f };
 
 	int Color = WHITE;
 
@@ -61,21 +63,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::Begin("window");
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
-		//PlaneのImGui
-		ImGui::DragFloat3("Plane.Normal", &plane.normal.x, 0.01f);
-		ImGui::DragFloat("Plane.Distance", &plane.distance, 0.01f);
-		ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat("Segment.Diff", &segment.diff.x, 0.01f);
+		ImGui::DragFloat3("segment diff", &segment.diff.x, 0.01f);
+		ImGui::DragFloat3("segment origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("verticles0", &triangle.vertices[0].x, 0.01f);
+		ImGui::DragFloat3("verticles1", &triangle.vertices[1].x, 0.01f);
+		ImGui::DragFloat3("verticles2", &triangle.vertices[2].x, 0.01f);
 		Vector3 start = Transform(Transform(segment.origin, WorldViewProjectionMatrix), viewportMatrix);
 		Vector3 end = Transform(Transform(vector::Add(segment.origin, segment.diff), WorldViewProjectionMatrix), viewportMatrix);
-		if (LineToPlane::onCollision(segment, plane) == true) {
+		
+		if (TriangleToLine::onCollision(triangle, segment)) {
 			Color = RED;
 		}
 		else {
 			Color = WHITE;
 		}
+
 		ImGui::End();
-		plane.normal = Normalize(plane.normal);
 
 		///
 		/// ↑更新処理ここまで
@@ -87,8 +90,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		DrawGrid(viewMatrix, projectionMatrix, viewportMatrix);
-		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), Color);
-		DrawPlane(plane, WorldViewProjectionMatrix, viewportMatrix, WHITE);
+		DrawTriAngle(triangle, WorldViewProjectionMatrix, viewportMatrix, 0xffffffff);
+		Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, Color);
 
 		///
 		/// ↑描画処理ここまで

@@ -817,7 +817,7 @@ void DrawGrid(const Matrix4x4& viewMatrix, const Matrix4x4& viewProjectionMatrix
 			int(screenVerticesStartColumn[xIndex].y),
 			int(screenVerticesEndColumn[xIndex].x),
 			int(screenVerticesEndColumn[xIndex].y),
-			RED);
+			WHITE);
 
 		Novice::DrawLine(
 			int(screenVerticesStartColumn[0].x),
@@ -858,7 +858,7 @@ void DrawGrid(const Matrix4x4& viewMatrix, const Matrix4x4& viewProjectionMatrix
 			int(screenVerticesStartLine[zIndex].y),
 			int(screenVerticesEndLine[zIndex].x),
 			int(screenVerticesEndLine[zIndex].y),
-			RED);
+			WHITE);
 
 		Novice::DrawLine(
 			int(screenVerticesStartLine[0].x),
@@ -959,6 +959,27 @@ void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const 
 }
 
 
+// 三角形の描画
+void DrawTriAngle(
+	const Triangle& triangle,
+	const Matrix4x4& viewProjectionMatrix,
+	const Matrix4x4& viewportMatrix,
+	unsigned int color) {
+
+	Vector3 verticle[3]{};
+
+	for (int i = 0; i < 3; i++) {
+		verticle[i] = Transform(Transform(triangle.vertices[i], viewProjectionMatrix), viewportMatrix);
+	}
+
+	Novice::DrawTriangle(
+		(int)verticle[0].x, (int)verticle[0].y, 
+		(int)verticle[1].x, (int)verticle[1].y, 
+		(int)verticle[2].x, (int)verticle[2].y, 
+		color, kFillModeWireFrame);
+}
+
+
 // 球の当たり判定
 namespace SphereToShere {
 	bool onCollision(const Sphere& s1, const Sphere& s2) {
@@ -1027,6 +1048,71 @@ namespace LineToPlane {
 
 			// 当たってる
 			return true;
+		}
+		// 当たってない
+		return false;
+	}
+}
+
+
+// 三角形と線の当たり判定
+namespace TriangleToLine {
+
+	bool onCollision(const Triangle& t1, const Segment& s1) {
+
+		// 平面を作る
+		Plane p1{};
+		p1.normal = Normalize(
+			Cross(vector::Subtract(t1.vertices[1], t1.vertices[0]),
+				vector::Subtract(t1.vertices[2], t1.vertices[1])));
+		p1.distance = Dot(t1.vertices[0], p1.normal);
+
+
+		// 法線と線の内積
+		float dot = Dot(s1.diff, p1.normal);
+
+		// 衝突 = 平行であるので、衝突しているはずがない
+		if (dot == 0.0f) {
+
+			// 当たってない
+			return false;
+		}
+
+		// tを求める
+		float t = (p1.distance - Dot(s1.origin, p1.normal)) / dot;
+
+		// tの値と線の種類で衝突判定
+		if (0.0f <= t && t <= 1.0f) {
+
+			// 衝突点
+			Vector3 td = {
+				s1.diff.x * t,
+				s1.diff.y * t,
+				s1.diff.z * t, };
+			Vector3 p = vector::Add(s1.origin, td);
+
+			// 各辺を結んだベクトルと、頂点と衝突点pを結んだベクトルのクロス積をとる
+			Vector3 cross01 = Cross(
+				vector::Subtract(t1.vertices[1], t1.vertices[0]),
+				vector::Subtract(p, t1.vertices[1]));
+
+			Vector3 cross12 = Cross(
+				vector::Subtract(t1.vertices[2], t1.vertices[1]),
+				vector::Subtract(p, t1.vertices[2]));
+
+			Vector3 cross20 = Cross(
+				vector::Subtract(t1.vertices[0], t1.vertices[2]),
+				vector::Subtract(p, t1.vertices[0]));
+
+
+			// すべての小三角形のクロス積と法線が同じ方向を向いていたら衝突	
+			if (Dot(cross01, p1.normal) >= 0.0f &&
+				Dot(cross12, p1.normal) >= 0.0f &&
+				Dot(cross20, p1.normal) >= 0.0f) {
+
+				// 当たっている
+				return true;
+			}
 		}
 		// 当たってない
 		return false;

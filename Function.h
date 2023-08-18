@@ -127,6 +127,13 @@ void DrawPlane(
 	const Matrix4x4& viewportMatrix, 
 	unsigned int color);
 
+// 三角形の描画
+void DrawTriAngle(
+	const Triangle& triangle, 
+	const Matrix4x4& viewProjectionMatrix, 
+	const Matrix4x4& viewportMatrix, 
+	unsigned int color);
+
 // 球と球の当たり判定
 namespace SphereToShere {
 
@@ -143,4 +150,10 @@ namespace SphereToPlane {
 namespace LineToPlane {
 
 	bool onCollision(const Segment& s1, const Plane& p1);
+}
+
+// 三角形と線の当たり判定
+namespace TriangleToLine {
+
+	bool onCollision(const Triangle& t1, const Segment& s1);
 }

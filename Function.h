@@ -134,6 +134,13 @@ void DrawTriAngle(
 	const Matrix4x4& viewportMatrix, 
 	unsigned int color);
 
+// AABbの描画
+void DrawAABB(
+	const AABB& aabb, 
+	const Matrix4x4& viewProjection, 
+	const Matrix4x4& viewport, 
+	uint32_t color);
+
 // 球と球の当たり判定
 namespace SphereToShere {
 
@@ -156,4 +163,10 @@ namespace LineToPlane {
 namespace TriangleToLine {
 
 	bool onCollision(const Triangle& t1, const Segment& s1);
+}
+
+// AABBとAABBの当たり判定
+namespace AABBToAABB {
+
+	bool onCollision(const AABB& aabb1, const AABB& aabb2);
 }

@@ -28,11 +28,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	Segment segment{ { 0.0f, 0.0f, -1.0f }, {1.0f,1.0f,0.0f} };
-	Triangle triangle{};
-	triangle.vertices[0] = { -1.0f, 0.0f, 0.0f };
-	triangle.vertices[1] = { 0.0f, 1.0f, 0.0f };
-	triangle.vertices[2] = { 1.0f, 0.0f, 0.0f };
+	AABB aabb1{};
+	aabb1.min = { -1.0f, -0.5f, -0.5f };
+	aabb1.max = { 0.0f, 0.5f, 0.5f };
+
+	AABB aabb2{};
+	aabb2.min = { 0.2f, 0.0f, 0.0f };
+	aabb2.max = { 1.0f, 1.0f, 1.0f };
 
 	int Color = WHITE;
 
@@ -63,21 +65,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::Begin("window");
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
-		ImGui::DragFloat3("segment diff", &segment.diff.x, 0.01f);
-		ImGui::DragFloat3("segment origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("verticles0", &triangle.vertices[0].x, 0.01f);
-		ImGui::DragFloat3("verticles1", &triangle.vertices[1].x, 0.01f);
-		ImGui::DragFloat3("verticles2", &triangle.vertices[2].x, 0.01f);
-		Vector3 start = Transform(Transform(segment.origin, WorldViewProjectionMatrix), viewportMatrix);
-		Vector3 end = Transform(Transform(vector::Add(segment.origin, segment.diff), WorldViewProjectionMatrix), viewportMatrix);
-		
-		if (TriangleToLine::onCollision(triangle, segment)) {
+		ImGui::DragFloat3("AABB1min", &aabb1.min.x, 0.1f, -1.0f, 5.0f);
+		ImGui::DragFloat3("AABB1max", &aabb1.max.x, 0.1f, -1.0f, 5.0f);
+		ImGui::DragFloat3("AABB2min", &aabb2.min.x, 0.1f, -1.0f, 5.0f);
+		ImGui::DragFloat3("AABB2max", &aabb2.max.x, 0.1f, -1.0f, 5.0f);
+		if (AABBToAABB::onCollision(aabb1, aabb2)) {
 			Color = RED;
 		}
 		else {
 			Color = WHITE;
 		}
-
 		ImGui::End();
 
 		///
@@ -90,8 +87,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		DrawGrid(viewMatrix, projectionMatrix, viewportMatrix);
-		DrawTriAngle(triangle, WorldViewProjectionMatrix, viewportMatrix, 0xffffffff);
-		Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, Color);
+		DrawAABB(aabb1, WorldViewProjectionMatrix, viewportMatrix, Color);
+		DrawAABB(aabb2, WorldViewProjectionMatrix, viewportMatrix, WHITE);
 
 		///
 		/// ↑描画処理ここまで

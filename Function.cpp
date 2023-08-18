@@ -835,101 +835,85 @@ void DrawGrid(const Matrix4x4& viewMatrix, const Matrix4x4& viewProjectionMatrix
 
 
 // 球の描画
-void DrawSphre(
+void DrawSphere(
 	const Sphere& sphere,
-	const Matrix4x4& viewMatrix,
 	const Matrix4x4& viewProjectionMatrix,
 	const Matrix4x4& viewportMatrix,
-	uint32_t colour) {
+	unsigned int color) {
 
-	//分割数
 	const uint32_t subDivision = 30;
-	//lat
-	const float lonEvery = float(M_PI / 20.0f);
-	//lon
-	const float latEvery = float(M_PI / 30.0f);
-
-	float thetaD = float(M_PI / subDivision);
-	float phiD = float(2.0f * M_PI / subDivision);
-
-
-	Vector3 ndcVerticesA{};
-	Vector3 ndcVerticesB{};
-	Vector3 ndcVerticesC{};
-	Vector3 ndcVerticesStart{};
-	Vector3 ndcVerticesEnd{};
-	Vector3 ndcVerticesXYStart{};
-	Vector3 ndcVerticesXYEnd{};
-	Vector3 screenVerticesA[subDivision]{};
-	Vector3 screenVerticesB[subDivision]{};
-	Vector3 screenVerticesC[subDivision]{};
-	Vector3 screenVerticesStart[subDivision]{};
-	Vector3 screenVerticesEnd[subDivision]{};
-	Vector3 screenVerticesXYStart[subDivision]{};
-	Vector3 screenVerticesXYEnd[subDivision]{};
-
+	const float lonEvery = 2.0f * (float)M_PI / float(subDivision);
+	const float lLatEvery = (float)M_PI / float(subDivision);
 
 	for (uint32_t latIndex = 0; latIndex < subDivision; ++latIndex) {
-		//現在の緯度
-		//θ
-		float lat = float(-M_PI / 2.0f + latEvery * latIndex);
+		float lat = -1.0f * (float)M_PI / 2.0f + lLatEvery * latIndex;
+
 		for (uint32_t lonIndex = 0; lonIndex < subDivision; ++lonIndex) {
-			//現在の経度
-			//ファイ
 			float lon = lonIndex * lonEvery;
 
-			//world座標でのabcを求める
-			//acはxz平面(phi,lon)
-			//abがxy平面(theta,lat)
 			Vector3 a, b, c;
+			a = { 
+				sphere.radius * std::cosf(lat) * std::cosf(lon), 
+				sphere.radius * std::sinf(lat), 
+				sphere.radius * std::cosf(lat) * std::sinf(lon) };
+			a = vector::Add(a, sphere.center);
 
-			a = { sphere.radius * (cosf(lat) * cosf(lon)),
-				sphere.radius * (sinf(lat)),
-				sphere.radius * (cosf(lat) * sinf(lon))};
+			b = { 
+				sphere.radius * std::cosf(lat + lLatEvery) * std::cosf(lon), 
+				sphere.radius * std::sinf(lat + lLatEvery), 
+				sphere.radius * std::cosf(lat + lLatEvery) * std::sinf(lon) };
+			b = vector::Add(b, sphere.center);
 
-			b = { sphere.radius * (cosf(lat + thetaD) * cosf(lon)),
-				sphere.radius * (sinf(lat + thetaD)),
-				sphere.radius * (cosf(lat + thetaD) * sinf(lon))};
+			c = { sphere.radius * std::cosf(lat) * std::cosf(lon + lonEvery), 
+				sphere.radius * std::sinf(lat), 
+				sphere.radius * std::cosf(lat) * std::sinf(lon + lonEvery) };
+			c = vector::Add(c, sphere.center);
 
-			c = { sphere.radius * (cosf(lat) * cosf(lon + phiD)),
-				sphere.radius * (sinf(lat)),
-				sphere.radius * (cosf(lat) * sinf(lon + phiD))};
-
-
-			//ab,acに引くよ！
-			Matrix4x4 WorldMatrixA = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, a);
-			Matrix4x4 WorldMatrixB = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, b);
-			Matrix4x4 WorldMatrixC = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, c);
-			
-			//ワールドへ
-			Matrix4x4 worldViewProjectionMatrixA = matrix::Multiply(WorldMatrixA, matrix::Multiply(viewMatrix, viewProjectionMatrix));
-			Matrix4x4 worldViewProjectionMatrixB = matrix::Multiply(WorldMatrixB, matrix::Multiply(viewMatrix, viewProjectionMatrix));
-			Matrix4x4 worldViewProjectionMatrixC = matrix::Multiply(WorldMatrixC, matrix::Multiply(viewMatrix, viewProjectionMatrix));
-
-
-			ndcVerticesA = Transform(a, worldViewProjectionMatrixA);
-			ndcVerticesB = Transform(b, worldViewProjectionMatrixB);
-			ndcVerticesC = Transform(c, worldViewProjectionMatrixC);
-
-			
-			screenVerticesA[latIndex] = Transform(ndcVerticesA, viewportMatrix);
-			screenVerticesB[latIndex] = Transform(ndcVerticesB, viewportMatrix);
-			screenVerticesC[latIndex] = Transform(ndcVerticesC, viewportMatrix);
+			a = Transform(a, viewProjectionMatrix);
+			a = Transform(a, viewportMatrix);
+			b = Transform(b, viewProjectionMatrix);
+			b = Transform(b, viewportMatrix);
+			c = Transform(c, viewProjectionMatrix);
+			c = Transform(c, viewportMatrix);
 
 
-			//ab
 			Novice::DrawLine(
-				int(screenVerticesA[lonIndex].x),
-				int(screenVerticesA[lonIndex].y),
-				int(screenVerticesB[lonIndex].x),
-				int(screenVerticesB[lonIndex].y), colour);
+				int(a.x), int(a.y),
+				int(b.x), int(b.y),
+				color
+			);
 
-			//ac
 			Novice::DrawLine(
-				int(screenVerticesA[latIndex].x),
-				int(screenVerticesA[latIndex].y),
-				int(screenVerticesC[latIndex].x),
-				int(screenVerticesC[latIndex].y), colour);
+				int(a.x), int(a.y),
+				int(c.x), int(c.y),
+				color
+			);
+
 		}
 	}
+}
+
+
+// 正射影ベクトル
+Vector3 Project(const Vector3 v1, const Vector3 v2) {
+	Vector3 result;
+	result = vector::Multiply(Dot(v1, Normalize(v2)), Normalize(v2));
+	return result;
+}
+
+
+// 最近接点
+Vector3 ClosestPoint(const Vector3 point, const Segment segment) {
+	Vector3 result{};
+
+	float length = sqrt(segment.diff.x * segment.diff.x + segment.diff.y * segment.diff.y + segment.diff.z * segment.diff.z);
+	Vector3 normaliseSegment = { segment.diff.x / length,segment.diff.y / length,segment.diff.z / length };
+
+	float distance = Dot(vector::Subtract(point, segment.origin), normaliseSegment);
+	distance = std::clamp(distance, 0.0f, length);
+	Vector3 proj = vector::Multiply(distance, normaliseSegment);
+
+	result = vector::Add(segment.origin, proj);
+
+	return result;
 }

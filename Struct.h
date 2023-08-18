@@ -1,11 +1,36 @@
 ﻿#pragma once
+#include <Vector3.h>
 
 
-struct Matrix3x3 {
-	float m[3][3];
+// 行列4x4
+struct Matrix4x4 {
+	float m[4][4];
 };
 
 
-struct Matrix4x4 {
-	float m[4][4];
+// 球
+struct Sphere {
+	Vector3 center;
+	float radius;
+};
+
+
+// 直線
+struct Line {
+	Vector3 origin;	// !< 始点
+	Vector3 diff;   // !< 終点への差分ベクトル
+};
+
+
+// 半直線
+struct Ray {
+	Vector3 origin;	// !< 始点
+	Vector3 diff;   // !< 終点への差分ベクトル
+};
+
+
+// 線分
+struct Segment {
+	Vector3 origin;	// !< 始点
+	Vector3 diff;   // !< 終点への差分ベクトル
 };

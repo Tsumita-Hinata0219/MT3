@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include <Struct.h>
-#include <Vector3.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <cmath>
@@ -8,6 +7,7 @@
 #include <iostream>
 #include <cassert>
 #include "imgui.h"
+#include <algorithm>
 
 
 
@@ -105,13 +105,17 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2);
 void DrawGrid(const Matrix4x4& viewMatrix, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 
 // 球の描画
-struct Sphere {
-	Vector3 center;
-	float radius;
-};
-void DrawSphre(
-	const Sphere& sphere,
-	const Matrix4x4& viewMatrix,
-	const Matrix4x4& viewProjectionMatrix,
-	const Matrix4x4& viewportMatrix,
-	unsigned int  colour);
+void DrawSphere(
+	const Sphere& sphere, 
+	const Matrix4x4& viewProjectionMatrix, 
+	const Matrix4x4& viewportMatrix, 
+	unsigned int color);
+
+// 正射影ベクトル
+Vector3 Project(const Vector3 v1, const Vector3 v2);
+
+// 最近接点
+Vector3 ClosestPoint(const Vector3 point, const Segment segment);
+
+
+

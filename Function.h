@@ -7,6 +7,7 @@
 #include <Novice.h>
 #include <iostream>
 #include <cassert>
+#include "imgui.h"
 
 
 
@@ -99,3 +100,18 @@ Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, f
 
 // クロス積
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
+
+// グリッドの描画
+void DrawGrid(const Matrix4x4& viewMatrix, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
+
+// 球の描画
+struct Sphere {
+	Vector3 center;
+	float radius;
+};
+void DrawSphre(
+	const Sphere& sphere,
+	const Matrix4x4& viewMatrix,
+	const Matrix4x4& viewProjectionMatrix,
+	const Matrix4x4& viewportMatrix,
+	unsigned int  colour);

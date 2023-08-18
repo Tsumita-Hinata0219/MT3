@@ -714,3 +714,222 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2) {
 
 	return result;
 }
+
+
+// グリッドの描画
+void DrawGrid(const Matrix4x4& viewMatrix, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
+	//Gridの半分の幅
+	const float gridHalfWidth = 1.0f;
+
+	//分割数
+	const uint32_t subDivision = 10;
+
+	//一つ分の長さ
+	const float gridEvery = (gridHalfWidth * 2.0f) / float(subDivision);
+
+
+	//縦
+	Vector3 LocalVerticesStartColumn[11]{};
+	Vector3 LocalVerticesEndColumn[11]{};
+	Matrix4x4 WorldMatrixStartColumn[11]{};
+	Matrix4x4 WorldMatrixEndColumn[11]{};
+	Vector3 ScreenVerticesColumn{};
+	Vector3 ndcVerticesStartColumn{};
+	Vector3 ndcVerticesEndColumn{};
+	Vector3 screenVerticesStartColumn[11]{};
+	Vector3 screenVerticesEndColumn[11]{};
+
+	//横
+	Vector3 LocalVerticesStartLine[11]{};
+	Vector3 LocalVerticesEndLine[11]{};
+	Matrix4x4 WorldMatrixStartLine[11]{};
+	Matrix4x4 WorldMatrixEndLine[11]{};
+	Vector3 ScreenVerticesLine{};
+	Vector3 ndcVerticesStartLine{};
+	Vector3 ndcVerticesEndLine{};
+	Vector3 screenVerticesStartLine[11]{};
+	Vector3 screenVerticesEndLine[11]{};
+
+
+	//奥から手前への線を順々に引いてくる(縦)
+	for (int xIndex = 0; xIndex <= subDivision; ++xIndex) {
+
+		LocalVerticesStartColumn[xIndex].x = xIndex * gridEvery - gridHalfWidth;
+		LocalVerticesStartColumn[xIndex].y = 0.0f;
+		LocalVerticesStartColumn[xIndex].z = -gridHalfWidth;
+
+		LocalVerticesEndColumn[xIndex].x = xIndex * gridEvery - gridHalfWidth;
+		LocalVerticesEndColumn[xIndex].y = 0.0f;
+		LocalVerticesEndColumn[xIndex].z = gridHalfWidth;
+
+		WorldMatrixStartColumn[xIndex] = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, LocalVerticesStartColumn[xIndex]);
+		WorldMatrixEndColumn[xIndex] = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, LocalVerticesEndColumn[xIndex]);
+
+
+		Matrix4x4 worldViewProjectionMatrixStart = matrix::Multiply(WorldMatrixStartColumn[xIndex], matrix::Multiply(viewMatrix, viewProjectionMatrix));
+		Matrix4x4 worldViewProjectionMatrixEnd = matrix::Multiply(WorldMatrixEndColumn[xIndex], matrix::Multiply(viewMatrix, viewProjectionMatrix));
+
+
+		ndcVerticesStartColumn = Transform(LocalVerticesStartColumn[xIndex], worldViewProjectionMatrixStart);
+		ndcVerticesEndColumn = Transform(LocalVerticesEndColumn[xIndex], worldViewProjectionMatrixEnd);
+
+		screenVerticesStartColumn[xIndex] = Transform(ndcVerticesStartColumn, viewportMatrix);
+		screenVerticesEndColumn[xIndex] = Transform(ndcVerticesEndColumn, viewportMatrix);
+
+
+		Novice::DrawLine(
+			int(screenVerticesStartColumn[xIndex].x),
+			int(screenVerticesStartColumn[xIndex].y),
+			int(screenVerticesEndColumn[xIndex].x),
+			int(screenVerticesEndColumn[xIndex].y),
+			RED);
+
+		Novice::DrawLine(
+			int(screenVerticesStartColumn[0].x),
+			int(screenVerticesStartColumn[0].y),
+			int(screenVerticesEndColumn[0].x),
+			int(screenVerticesEndColumn[0].y),
+			BLUE);
+	}
+
+	//左から右も同じように順々に引いていく(横)
+	for (uint32_t zIndex = 0; zIndex <= subDivision; ++zIndex) {
+
+		LocalVerticesStartLine[zIndex].x = -gridHalfWidth;
+		LocalVerticesStartLine[zIndex].y = 0.0f;
+		LocalVerticesStartLine[zIndex].z = zIndex * gridEvery - gridHalfWidth;
+
+		LocalVerticesEndLine[zIndex].x = gridHalfWidth;
+		LocalVerticesEndLine[zIndex].y = 0.0f;
+		LocalVerticesEndLine[zIndex].z = zIndex * gridEvery - gridHalfWidth;
+
+		WorldMatrixStartLine[zIndex] = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, LocalVerticesStartLine[zIndex]);
+		WorldMatrixEndLine[zIndex] = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, LocalVerticesEndLine[zIndex]);
+
+
+		Matrix4x4 worldViewProjectionMatrixStartLine = matrix::Multiply(WorldMatrixStartLine[zIndex], matrix::Multiply(viewMatrix, viewProjectionMatrix));
+		Matrix4x4 worldViewProjectionMatrixEndLine = matrix::Multiply(WorldMatrixEndLine[zIndex], matrix::Multiply(viewMatrix, viewProjectionMatrix));
+
+
+		ndcVerticesStartLine = Transform(LocalVerticesStartLine[zIndex], worldViewProjectionMatrixStartLine);
+		ndcVerticesEndLine = Transform(LocalVerticesEndLine[zIndex], worldViewProjectionMatrixEndLine);
+
+		screenVerticesStartLine[zIndex] = Transform(ndcVerticesStartLine, viewportMatrix);
+		screenVerticesEndLine[zIndex] = Transform(ndcVerticesEndLine, viewportMatrix);
+
+
+		Novice::DrawLine(
+			int(screenVerticesStartLine[zIndex].x),
+			int(screenVerticesStartLine[zIndex].y),
+			int(screenVerticesEndLine[zIndex].x),
+			int(screenVerticesEndLine[zIndex].y),
+			RED);
+
+		Novice::DrawLine(
+			int(screenVerticesStartLine[0].x),
+			int(screenVerticesStartLine[0].y),
+			int(screenVerticesEndLine[0].x),
+			int(screenVerticesEndLine[0].y), BLUE);
+	}
+}
+
+
+// 球の描画
+void DrawSphre(
+	const Sphere& sphere,
+	const Matrix4x4& viewMatrix,
+	const Matrix4x4& viewProjectionMatrix,
+	const Matrix4x4& viewportMatrix,
+	uint32_t colour) {
+
+	//分割数
+	const uint32_t subDivision = 30;
+	//lat
+	const float lonEvery = float(M_PI / 20.0f);
+	//lon
+	const float latEvery = float(M_PI / 30.0f);
+
+	float thetaD = float(M_PI / subDivision);
+	float phiD = float(2.0f * M_PI / subDivision);
+
+
+	Vector3 ndcVerticesA{};
+	Vector3 ndcVerticesB{};
+	Vector3 ndcVerticesC{};
+	Vector3 ndcVerticesStart{};
+	Vector3 ndcVerticesEnd{};
+	Vector3 ndcVerticesXYStart{};
+	Vector3 ndcVerticesXYEnd{};
+	Vector3 screenVerticesA[subDivision]{};
+	Vector3 screenVerticesB[subDivision]{};
+	Vector3 screenVerticesC[subDivision]{};
+	Vector3 screenVerticesStart[subDivision]{};
+	Vector3 screenVerticesEnd[subDivision]{};
+	Vector3 screenVerticesXYStart[subDivision]{};
+	Vector3 screenVerticesXYEnd[subDivision]{};
+
+
+	for (uint32_t latIndex = 0; latIndex < subDivision; ++latIndex) {
+		//現在の緯度
+		//θ
+		float lat = float(-M_PI / 2.0f + latEvery * latIndex);
+		for (uint32_t lonIndex = 0; lonIndex < subDivision; ++lonIndex) {
+			//現在の経度
+			//ファイ
+			float lon = lonIndex * lonEvery;
+
+			//world座標でのabcを求める
+			//acはxz平面(phi,lon)
+			//abがxy平面(theta,lat)
+			Vector3 a, b, c;
+
+			a = { sphere.radius * (cosf(lat) * cosf(lon)),
+				sphere.radius * (sinf(lat)),
+				sphere.radius * (cosf(lat) * sinf(lon))};
+
+			b = { sphere.radius * (cosf(lat + thetaD) * cosf(lon)),
+				sphere.radius * (sinf(lat + thetaD)),
+				sphere.radius * (cosf(lat + thetaD) * sinf(lon))};
+
+			c = { sphere.radius * (cosf(lat) * cosf(lon + phiD)),
+				sphere.radius * (sinf(lat)),
+				sphere.radius * (cosf(lat) * sinf(lon + phiD))};
+
+
+			//ab,acに引くよ！
+			Matrix4x4 WorldMatrixA = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, a);
+			Matrix4x4 WorldMatrixB = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, b);
+			Matrix4x4 WorldMatrixC = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, c);
+			
+			//ワールドへ
+			Matrix4x4 worldViewProjectionMatrixA = matrix::Multiply(WorldMatrixA, matrix::Multiply(viewMatrix, viewProjectionMatrix));
+			Matrix4x4 worldViewProjectionMatrixB = matrix::Multiply(WorldMatrixB, matrix::Multiply(viewMatrix, viewProjectionMatrix));
+			Matrix4x4 worldViewProjectionMatrixC = matrix::Multiply(WorldMatrixC, matrix::Multiply(viewMatrix, viewProjectionMatrix));
+
+
+			ndcVerticesA = Transform(a, worldViewProjectionMatrixA);
+			ndcVerticesB = Transform(b, worldViewProjectionMatrixB);
+			ndcVerticesC = Transform(c, worldViewProjectionMatrixC);
+
+			
+			screenVerticesA[latIndex] = Transform(ndcVerticesA, viewportMatrix);
+			screenVerticesB[latIndex] = Transform(ndcVerticesB, viewportMatrix);
+			screenVerticesC[latIndex] = Transform(ndcVerticesC, viewportMatrix);
+
+
+			//ab
+			Novice::DrawLine(
+				int(screenVerticesA[lonIndex].x),
+				int(screenVerticesA[lonIndex].y),
+				int(screenVerticesB[lonIndex].x),
+				int(screenVerticesB[lonIndex].y), colour);
+
+			//ac
+			Novice::DrawLine(
+				int(screenVerticesA[latIndex].x),
+				int(screenVerticesA[latIndex].y),
+				int(screenVerticesC[latIndex].x),
+				int(screenVerticesC[latIndex].y), colour);
+		}
+	}
+}

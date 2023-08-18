@@ -138,3 +138,9 @@ namespace SphereToPlane {
 
 	bool onCollision(const Sphere& s1, const Plane& p1);
 }
+
+// 線と平面の衝突判定
+namespace LineToPlane {
+
+	bool onCollision(const Segment& s1, const Plane& p1);
+}

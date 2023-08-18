@@ -1002,3 +1002,33 @@ namespace SphereToPlane {
 		}
 	}
 }
+
+
+// 線と平面の衝突判定
+namespace LineToPlane {
+
+	bool onCollision(const Segment& s1, const Plane& p1) {
+
+		// 法線と線の内積
+		float dot = Dot(s1.diff, p1.normal);
+
+		// 衝突 = 平行であるので、衝突しているはずがない
+		if (dot == 0.0f) {
+			
+			// 当たってない
+			return false;
+		}
+
+		// tを求める
+		float t = (p1.distance - Dot(s1.origin, p1.normal)) / dot;
+
+		// tの値と線の種類で衝突判定
+		if (0.0f <= t && t <= 1.0f) {
+
+			// 当たってる
+			return true;
+		}
+		// 当たってない
+		return false;
+	}
+}

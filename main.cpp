@@ -1,4 +1,5 @@
 #include <Novice.h>
+#include "Function.h"
 
 const char kWindowTitle[] = "LE2B_20_ツミタ_ヒナタ_";
 
@@ -14,6 +15,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
+
+	const int kRowHeight = 15;
+
+	Vector3 v1{ 1.0f,3.0f,-5.0f };
+	Vector3 v2{ 4.0f,-1.0f,2.0f };
+	float k = 4.0f;
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -27,6 +35,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
+		// 加算
+		Vector3 resultAdd = Add(v1, v2);
+
+		// 減算
+		Vector3 resultSubtract = Subtract(v1, v2);
+
+		// スカラー倍
+		Vector3 resultMultiply = Multiply(k, v1);
+
+		// 内積
+		float resultDot = Dot(v1, v2);
+
+		// 長さ
+		float resultLength = Length(v1);
+
+		// 正規化
+		Vector3 resultNormalize = Normalize(v2);
+
 		///
 		/// ↑更新処理ここまで
 		///
@@ -34,6 +60,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
+
+		// 表示
+		VectorScreenPrintf(0, 0, resultAdd, " : Add");
+
+		VectorScreenPrintf(0, kRowHeight * 1, resultSubtract, " : Subtract");
+
+		VectorScreenPrintf(0, kRowHeight * 2, resultMultiply, " : Multiply");
+
+		Novice::ScreenPrintf(0, kRowHeight * 3, "%.02f  : Dot", resultDot);
+
+		Novice::ScreenPrintf(0, kRowHeight * 4, "%.02f  : Length", resultLength);
+
+		VectorScreenPrintf(0, kRowHeight * 5, resultNormalize, " : tNormalize");
 
 		///
 		/// ↑描画処理ここまで

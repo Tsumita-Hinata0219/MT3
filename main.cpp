@@ -16,11 +16,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char preKeys[256] = {0};
 
 
-	const int kRowHeight = 15;
 
-	Vector3 v1{ 1.0f,3.0f,-5.0f };
-	Vector3 v2{ 4.0f,-1.0f,2.0f };
-	float k = 4.0f;
+	Matrix4x4 m1 = { 3.2f, 0.7f, 9.6f, 4.4f,
+					 5.5f, 1.3f, 7.8f, 2.1f,
+					 6.9f, 8.0f, 2.6f, 1.0f,
+					 0.5f, 7.2f, 5.1f, 3.3f };
+
+	Matrix4x4 m2 = { 4.1f, 6.5f, 3.3f, 2.2f,
+					 8.8f, 0.6f, 9.9f, 7.7f,
+					 1.1f, 5.5f, 6.6f, 0.0f,
+					 3.3f, 9.9f, 8.8f, 2.2f };
+
+
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -35,23 +42,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
-		// 加算
-		Vector3 resultAdd = Add(v1, v2);
 
-		// 減算
-		Vector3 resultSubtract = Subtract(v1, v2);
+		// 加法
+		Matrix4x4 resultAdd = matrix::Add(m1, m2);
 
-		// スカラー倍
-		Vector3 resultMultiply = Multiply(k, v1);
+		// 積
+		Matrix4x4 resultMultiply = matrix::Multiply(m1, m2);
 
-		// 内積
-		float resultDot = Dot(v1, v2);
+		// 減法
+		Matrix4x4 resultSubtract = matrix::Subtract(m1, m2);
 
-		// 長さ
-		float resultLength = Length(v1);
+		// 逆行列
+		Matrix4x4 inverseM1 = Inverse(m1);
 
-		// 正規化
-		Vector3 resultNormalize = Normalize(v2);
+		// 逆行列
+		Matrix4x4 inverseM2 = Inverse(m2);
+
+		// 転置行列
+		Matrix4x4 TransposeM1 = Transpose(m1);
+
+		// 転置行列
+		Matrix4x4 TransposeM2 = Transpose(m2);
+
+		// 単位行列の作成
+		Matrix4x4 identity = MakeIdentity4x4();
+	
 
 		///
 		/// ↑更新処理ここまで
@@ -61,18 +76,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
+		
 		// 表示
-		VectorScreenPrintf(0, 0, resultAdd, " : Add");
+		MatrixScreenPrintf(0, 0, resultAdd, "        Add");
 
-		VectorScreenPrintf(0, kRowHeight * 1, resultSubtract, " : Subtract");
+		MatrixScreenPrintf(0, kRowHeight * 5, resultSubtract, "        Subtract");
 
-		VectorScreenPrintf(0, kRowHeight * 2, resultMultiply, " : Multiply");
+		MatrixScreenPrintf(0, kRowHeight * 5 * 2, resultMultiply, "        Multiply");
 
-		Novice::ScreenPrintf(0, kRowHeight * 3, "%.02f  : Dot", resultDot);
+		MatrixScreenPrintf(0, kRowHeight * 5 * 3, inverseM1, "        inverseM1");
 
-		Novice::ScreenPrintf(0, kRowHeight * 4, "%.02f  : Length", resultLength);
+		MatrixScreenPrintf(0, kRowHeight * 5 * 4, inverseM2, "        inverseM2");
 
-		VectorScreenPrintf(0, kRowHeight * 5, resultNormalize, " : tNormalize");
+		MatrixScreenPrintf(kColumnWidth * 5, 0, TransposeM1, "        transposeM1");
+
+		MatrixScreenPrintf(kColumnWidth * 5, kRowHeight * 5, TransposeM2, "        transposeM2");
+
+		MatrixScreenPrintf(kColumnWidth * 5, kRowHeight * 5 * 2, identity, "        identity");
+
 
 		///
 		/// ↑描画処理ここまで

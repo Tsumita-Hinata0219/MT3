@@ -32,9 +32,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	aabb1.min = { -1.0f, -0.5f, -0.5f };
 	aabb1.max = { 0.0f, 0.5f, 0.5f };
 
-	AABB aabb2{};
-	aabb2.min = { 0.2f, 0.0f, 0.0f };
-	aabb2.max = { 1.0f, 1.0f, 1.0f };
+	Sphere sphere1 = { 0.0f,0.0f, 0.0f, 0.5f };
 
 	int Color = WHITE;
 
@@ -67,9 +65,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 		ImGui::DragFloat3("AABB1min", &aabb1.min.x, 0.1f, -1.0f, 5.0f);
 		ImGui::DragFloat3("AABB1max", &aabb1.max.x, 0.1f, -1.0f, 5.0f);
-		ImGui::DragFloat3("AABB2min", &aabb2.min.x, 0.1f, -1.0f, 5.0f);
-		ImGui::DragFloat3("AABB2max", &aabb2.max.x, 0.1f, -1.0f, 5.0f);
-		if (AABBToAABB::onCollision(aabb1, aabb2)) {
+		ImGui::DragFloat3("Sphere1Center", &sphere1.center.x, 0.01f);
+		ImGui::DragFloat("Sphere1Radius", &sphere1.radius, 0.01f);
+		if (AABBToSphere::onCollision(aabb1, sphere1)) {
 			Color = RED;
 		}
 		else {
@@ -88,7 +86,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewMatrix, projectionMatrix, viewportMatrix);
 		DrawAABB(aabb1, WorldViewProjectionMatrix, viewportMatrix, Color);
-		DrawAABB(aabb2, WorldViewProjectionMatrix, viewportMatrix, WHITE);
+		DrawSphere(sphere1, WorldViewProjectionMatrix, viewportMatrix, 0xffffffff);
 
 		///
 		/// ↑描画処理ここまで

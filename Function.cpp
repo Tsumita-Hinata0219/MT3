@@ -1181,3 +1181,30 @@ namespace AABBToAABB {
 	}
 }
 
+
+// AABBと球の当たり判定
+namespace AABBToSphere {
+
+	bool onCollision(const AABB& aabb1, const Sphere& s1) {
+
+		// 最近接点を求める
+		const Vector3 ClosestPoint = {
+			std::clamp(s1.center.x, aabb1.min.x, aabb1.max.x),
+			std::clamp(s1.center.y, aabb1.min.y, aabb1.max.y),
+			std::clamp(s1.center.z, aabb1.min.z, aabb1.max.z), };
+
+		// 最近接点と球の中心と距離を求める
+		float dist = Length(vector::Subtract(ClosestPoint, s1.center));
+
+		// 距離が半径よりも小さければ衝突
+		if (dist <= s1.radius) {
+
+			// 当たってる
+			return true;
+		}
+		else {
+			// 当たってない
+			return false;
+		}
+	}
+}

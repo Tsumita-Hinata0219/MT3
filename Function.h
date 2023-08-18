@@ -170,3 +170,9 @@ namespace AABBToAABB {
 
 	bool onCollision(const AABB& aabb1, const AABB& aabb2);
 }
+
+// AABBと球の当たり判定
+namespace AABBToSphere {
+
+	bool onCollision(const AABB& aabb1, const Sphere& s1);
+}

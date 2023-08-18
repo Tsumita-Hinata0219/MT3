@@ -917,3 +917,21 @@ Vector3 ClosestPoint(const Vector3 point, const Segment segment) {
 
 	return result;
 }
+
+
+// 球と球の当たり判定
+bool onCollision(const Sphere& s1, const Sphere& s2) {
+
+	// 中心からの距離
+	float distance = Length(vector::Subtract(s2.center, s1.center));
+
+	// 距離と半径を比べる
+	if (distance <= s1.radius + s2.radius) {
+
+		// 当たってる
+		return true;
+	}
+
+	return false;
+}
+

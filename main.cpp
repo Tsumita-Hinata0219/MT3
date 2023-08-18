@@ -29,8 +29,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Sphere sphere1 = { 0.0f,0.0f, 0.0f, 0.5f };
 	int sphereColor = WHITE;
-	Sphere sphere2 = { 2.0f,0.0f, 0.0f, 0.5f };
 
+	Plane plane = { {0.0f,1.0f,0.0f},1.0f };
 
 
 	// ウィンドウの×ボタンが押されるまでループ
@@ -56,24 +56,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(ScreenWidth), float(ScreenHeight), 0.0f, 1.0f);
 
 
-		// 衝突判定
-		if (onCollision(sphere1, sphere2)) {
-			sphereColor = RED;
-		}
-		else {
-			sphereColor = WHITE;
-		}
-
 		ImGui::Begin("window");
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 		//スフィアのImGui
 		ImGui::DragFloat3("Sphere1Center", &sphere1.center.x, 0.01f);
 		ImGui::DragFloat("Sphere1Radius", &sphere1.radius, 0.01f);
-		ImGui::DragFloat3("Sphere2Center", &sphere2.center.x, 0.01f);
-		ImGui::DragFloat("Sphere2Radius", &sphere2.radius, 0.01f);
-		ImGui::End();
+		//PlaneのImGui
+		ImGui::DragFloat3("PlaneCenter", &plane.normal.x, 0.01f);
 
+		if (SphereToPlane::onCollision(sphere1, plane) == true) {
+			sphereColor = RED;
+		}
+		else {
+			sphereColor = WHITE;
+		}
+		ImGui::End();
 
 		///
 		/// ↑更新処理ここまで
@@ -86,7 +84,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewMatrix, projectionMatrix, viewportMatrix);
 		DrawSphere(sphere1, WorldViewProjectionMatrix, viewportMatrix, sphereColor);
-		DrawSphere(sphere2, WorldViewProjectionMatrix, viewportMatrix, WHITE);
+		DrawPlane(plane, WorldViewProjectionMatrix, viewportMatrix, WHITE);
 
 		///
 		/// ↑描画処理ここまで

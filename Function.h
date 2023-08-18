@@ -101,6 +101,15 @@ Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, f
 // クロス積
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
+// 正射影ベクトル
+Vector3 Project(const Vector3 v1, const Vector3 v2);
+
+// 最近接点
+Vector3 ClosestPoint(const Vector3 point, const Segment segment);
+
+// 
+Vector3 Perpendicular(const Vector3& vector);
+
 // グリッドの描画
 void DrawGrid(const Matrix4x4& viewMatrix, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 
@@ -111,12 +120,21 @@ void DrawSphere(
 	const Matrix4x4& viewportMatrix, 
 	unsigned int color);
 
-// 正射影ベクトル
-Vector3 Project(const Vector3 v1, const Vector3 v2);
-
-// 最近接点
-Vector3 ClosestPoint(const Vector3 point, const Segment segment);
+// 平面の描画
+void DrawPlane(
+	const Plane& plane, 
+	const Matrix4x4& viewProjectionMatrix, 
+	const Matrix4x4& viewportMatrix, 
+	unsigned int color);
 
 // 球と球の当たり判定
-bool onCollision(const Sphere& s1, const Sphere& s2);
+namespace SphereToShere {
 
+	bool onCollision(const Sphere& s1, const Sphere& s2);
+}
+
+// 球と面の当たり判定
+namespace SphereToPlane {
+
+	bool onCollision(const Sphere& s1, const Plane& p1);
+}

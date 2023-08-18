@@ -716,6 +716,41 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2) {
 }
 
 
+// 正射影ベクトル
+Vector3 Project(const Vector3 v1, const Vector3 v2) {
+	Vector3 result;
+	result = vector::Multiply(Dot(v1, Normalize(v2)), Normalize(v2));
+	return result;
+}
+
+
+// 最近接点
+Vector3 ClosestPoint(const Vector3 point, const Segment segment) {
+	Vector3 result{};
+
+	float length = sqrt(segment.diff.x * segment.diff.x + segment.diff.y * segment.diff.y + segment.diff.z * segment.diff.z);
+	Vector3 normaliseSegment = { segment.diff.x / length,segment.diff.y / length,segment.diff.z / length };
+
+	float distance = Dot(vector::Subtract(point, segment.origin), normaliseSegment);
+	distance = std::clamp(distance, 0.0f, length);
+	Vector3 proj = vector::Multiply(distance, normaliseSegment);
+
+	result = vector::Add(segment.origin, proj);
+
+	return result;
+}
+
+
+// 
+Vector3 Perpendicular(const Vector3& vector)
+{
+	if (vector.x != 0.0f || vector.y != 0.0f) {
+		return { -vector.y,vector.x,0.0f };
+	}
+	return { 0.0f,-vector.z,vector.y };
+}
+
+
 // グリッドの描画
 void DrawGrid(const Matrix4x4& viewMatrix, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
 	//Gridの半分の幅
@@ -894,44 +929,76 @@ void DrawSphere(
 }
 
 
-// 正射影ベクトル
-Vector3 Project(const Vector3 v1, const Vector3 v2) {
-	Vector3 result;
-	result = vector::Multiply(Dot(v1, Normalize(v2)), Normalize(v2));
-	return result;
-}
+// 平面の描画
+void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color) {
+	Vector3 center = {
+		plane.normal.x * plane.distance,
+		plane.normal.y * plane.distance,
+		plane.normal.z * plane.distance, };
 
+	Vector3 perpendiculars[4]{};
+	perpendiculars[0] = Normalize(Perpendicular(plane.normal));
+	perpendiculars[1] = { -perpendiculars[0].x,-perpendiculars[0].y,-perpendiculars[0].z };
+	perpendiculars[2] = Cross(plane.normal, perpendiculars[0]);
+	perpendiculars[3] = { -perpendiculars[2].x,-perpendiculars[2].y,-perpendiculars[2].z };
 
-// 最近接点
-Vector3 ClosestPoint(const Vector3 point, const Segment segment) {
-	Vector3 result{};
-
-	float length = sqrt(segment.diff.x * segment.diff.x + segment.diff.y * segment.diff.y + segment.diff.z * segment.diff.z);
-	Vector3 normaliseSegment = { segment.diff.x / length,segment.diff.y / length,segment.diff.z / length };
-
-	float distance = Dot(vector::Subtract(point, segment.origin), normaliseSegment);
-	distance = std::clamp(distance, 0.0f, length);
-	Vector3 proj = vector::Multiply(distance, normaliseSegment);
-
-	result = vector::Add(segment.origin, proj);
-
-	return result;
-}
-
-
-// 球と球の当たり判定
-bool onCollision(const Sphere& s1, const Sphere& s2) {
-
-	// 中心からの距離
-	float distance = Length(vector::Subtract(s2.center, s1.center));
-
-	// 距離と半径を比べる
-	if (distance <= s1.radius + s2.radius) {
-
-		// 当たってる
-		return true;
+	Vector3 points[4]{};
+	for (int32_t index = 0; index < 4; ++index) {
+		Vector3 extend = {
+			perpendiculars[index].x * 2.0f,
+			perpendiculars[index].y * 2.0f,
+			perpendiculars[index].z * 2.0f, };
+		Vector3 point = vector::Add(center, extend);
+		points[index] = Transform(Transform(point, viewProjectionMatrix), viewportMatrix);
 	}
 
-	return false;
+	Novice::DrawLine((int)points[0].x, (int)points[0].y, (int)points[2].x, (int)points[2].y, color);
+	Novice::DrawLine((int)points[1].x, (int)points[1].y, (int)points[3].x, (int)points[3].y, color);
+	Novice::DrawLine((int)points[2].x, (int)points[2].y, (int)points[1].x, (int)points[1].y, color);
+	Novice::DrawLine((int)points[3].x, (int)points[3].y, (int)points[0].x, (int)points[0].y, color);
 }
 
+
+// 球の当たり判定
+namespace SphereToShere {
+	bool onCollision(const Sphere& s1, const Sphere& s2) {
+
+		// 中心からの距離
+		float distance = Length(vector::Subtract(s2.center, s1.center));
+
+		// 距離と半径を比べる
+		if (distance <= s1.radius + s2.radius) {
+
+			// 当たってる
+			return true;
+		}
+		// 当たってない
+		return false;
+	}
+}
+
+
+// 球と面の当たり判定
+namespace SphereToPlane {
+
+	bool onCollision(const Sphere& s1, const Plane& p1) {
+
+		// 距離
+		Vector3 newVector = {
+			s1.center.x - p1.distance,
+			s1.center.y - p1.distance,
+			s1.center.z - p1.distance, };
+		float distance = Dot(Normalize(p1.normal), newVector);
+
+		// 距離を比べる
+		if (std::abs(distance) <= s1.radius) {
+
+			// 当たってる
+			return true;
+		}
+		else {
+			// 当たってない
+			return false;
+		}
+	}
+}

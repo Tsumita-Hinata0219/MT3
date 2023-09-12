@@ -216,7 +216,7 @@ namespace matrix {
 Matrix4x4 Inverse(const Matrix4x4& m) {
 	Matrix4x4 result{};
 
-	float as = 
+	float as =
 		m.m[0][0] * m.m[1][1] * m.m[2][2] * m.m[3][3] +
 		m.m[0][0] * m.m[1][2] * m.m[2][3] * m.m[3][1] +
 		m.m[0][0] * m.m[1][3] * m.m[2][1] * m.m[3][2] -
@@ -887,20 +887,20 @@ void DrawSphere(
 			float lon = lonIndex * lonEvery;
 
 			Vector3 a, b, c;
-			a = { 
-				sphere.radius * std::cosf(lat) * std::cosf(lon), 
-				sphere.radius * std::sinf(lat), 
+			a = {
+				sphere.radius * std::cosf(lat) * std::cosf(lon),
+				sphere.radius * std::sinf(lat),
 				sphere.radius * std::cosf(lat) * std::sinf(lon) };
 			a = vector::Add(a, sphere.center);
 
-			b = { 
-				sphere.radius * std::cosf(lat + lLatEvery) * std::cosf(lon), 
-				sphere.radius * std::sinf(lat + lLatEvery), 
+			b = {
+				sphere.radius * std::cosf(lat + lLatEvery) * std::cosf(lon),
+				sphere.radius * std::sinf(lat + lLatEvery),
 				sphere.radius * std::cosf(lat + lLatEvery) * std::sinf(lon) };
 			b = vector::Add(b, sphere.center);
 
-			c = { sphere.radius * std::cosf(lat) * std::cosf(lon + lonEvery), 
-				sphere.radius * std::sinf(lat), 
+			c = { sphere.radius * std::cosf(lat) * std::cosf(lon + lonEvery),
+				sphere.radius * std::sinf(lat),
 				sphere.radius * std::cosf(lat) * std::sinf(lon + lonEvery) };
 			c = vector::Add(c, sphere.center);
 
@@ -973,9 +973,9 @@ void DrawTriAngle(
 	}
 
 	Novice::DrawTriangle(
-		(int)verticle[0].x, (int)verticle[0].y, 
-		(int)verticle[1].x, (int)verticle[1].y, 
-		(int)verticle[2].x, (int)verticle[2].y, 
+		(int)verticle[0].x, (int)verticle[0].y,
+		(int)verticle[1].x, (int)verticle[1].y,
+		(int)verticle[2].x, (int)verticle[2].y,
 		color, kFillModeWireFrame);
 }
 
@@ -1078,7 +1078,7 @@ namespace LineToPlane {
 
 		// 衝突 = 平行であるので、衝突しているはずがない
 		if (dot == 0.0f) {
-			
+
 			// 当たってない
 			return false;
 		}

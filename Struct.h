@@ -49,7 +49,9 @@ struct Triangle {
 };
 
 
+// AABB
 struct AABB {
 	Vector3 min; // !< 最少点
 	Vector3 max; // !< 最大点
 };
+
